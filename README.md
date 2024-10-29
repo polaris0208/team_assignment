@@ -1,9 +1,9 @@
 # AI 8기 10조
-## Team 10
-- [Jin5721690]('https://github.com/Jin5721690')
-- [polaris0208]('https://github.com/polaris0208')
-- [polaris0208]('https://github.com/polaris0208')
-- [nyum76]('https://github.com/nyum76')
+## Team Members
+- [Jin5721690](https://github.com/Jin5721690)
+- [polaris0208](https://github.com/polaris0208)
+- [ysooj](https://github.com/ysooj)
+- [nyum76](https://github.com/nyum76)
 
 ## INDEX
 - team_10_titanic : 필수과제
