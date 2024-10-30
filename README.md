@@ -20,7 +20,7 @@
   - SentimentAnalysis_readme.md : 코드/설명
   - team_10_SentimentAnalysis.ipynb : 코드/결과
   
-  - requirments.txt : 사용 패키지 & 모듈
+- requirments.txt : 사용 패키지 & 모듈
   - 설치 `pip install -r requirements.txt`
 
 
