@@ -1,6 +1,7 @@
 # LSTM Model
 > 데이터셋 :  **Netflix Review** [¶](https://www.kaggle.com/datasets/ashishkumarak/netflix-reviews-playstore-daily-updated)<br>
 [¶ 데이터 전처리](#데이터-전처리)<br>
+[¶ 시퀀스 데이터 변환](#시퀀스-데이터-변환)<br>
 [¶ 데이터 세팅](#데이터-세팅)<br>
 [¶ 모델 정의](#lstm-모델-정의)<br>
 [¶ 예측 함수](#예측-함수---pipeline)<br>
@@ -374,7 +375,6 @@ tokenizer = Tokenizer(oov_token='<OOV>') # 없는 데이터 치환
 tokenizer.fit_on_texts(reviews) # 단어집 생성
 len(tokenizer.word_index) # 단어집 개수
 ```
-[¶ TOP](#lstm-model)
 
 ## Padding
 - 정수형 데이터로 변환 
