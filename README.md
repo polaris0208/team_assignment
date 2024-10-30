@@ -12,6 +12,7 @@
   - team_10_titanic.ipynb : 코드/결과
 
 - team_10_LSTM : 도전과제 필수
+  - images : 사용 이미지 파일
   - LSTM_readme.md : 코드/설명
   - team_10_LSTM.ipynb : 코드/결과
 
