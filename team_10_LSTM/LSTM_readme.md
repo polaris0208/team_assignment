@@ -136,32 +136,208 @@ def WordCorrect(senntense):
 
 # 전처리 함수
 
+# 과도한 전처리를 할 경우 데이터 수가 줄어들어 성능 저하 - 여러번 테스트하며 조절
 def preprocessing(sentence):
-  if isinstance(sentence, float): return '' # 실수형 데이터 제거, 문자형만
-  cleaned = re.sub('[^a-zA-Z]', ' ', sentence) # 문자만
-  cleaned = t_replacer(cleaned) # 't 를 not으로 대체
-  cleaned = TagFitter(cleaned) # 태그를 기준으로 불필요한 품사 제ㄱ
-  cleaned = cleaned.lower() # 소문자화
-  cleaned = cleaned.strip() # 띄어쓰기 제외한 공백 제거
-  cleaned = cleaned.split() # 문장 분할
-  cleaned = lemma_v(cleaned) # 동사 원형화
-  cleaned = lemma_n(cleaned) # 명사 원형화
-  cleaned = [word for word in cleaned if word not in stop_words] 
-  # 불용어 제거
-  cleaned = ' '.join(cleaned) # 문장으로 복원
-  # cleaned = WordCorrect(cleaned) # 철자 검사
+  if isinstance(sentence, float): return ''
+  cleaned = re.sub('[^a-zA-Z]', ' ', sentence)
+  # cleaned = t_replacer(cleaned)
+  # cleaned = TagFitter(cleaned)
+  cleaned = cleaned.lower()
+  cleaned = cleaned.strip()
+  cleaned = cleaned.split()
+  cleaned = lemma_v(cleaned)
+  cleaned = lemma_n(cleaned)
+  # cleaned = [word for word in cleaned if word not in stop_words]
+  cleaned = ' '.join(cleaned)
+  # cleaned = WordCorrect(cleaned)
   return cleaned
 
 content[0:5].apply(preprocessing)
   # 
-0                                             not open
-1                                                 best
-2    famous korean drama not dub sense pay subscrip...
-3       superb please add comment section like youtube
-4    reason not give four star opinion many foreign...
+0                                           can t open
+1                                         the best app
+2    most of the famous korean drama be not dub in ...
+3    it s superb but can you please add comment sec...
+4    the only reason i didn t give it four star be ...
 Name: content, dtype: object
 ```
+## 전처리 함수 적용
+- lambda 활용 : 명확한 범위 지정 필요
 
+```py
+df.loc[:, 'content'] = df['content'].apply(lambda x: preprocessing(x))
+```
+
+## 데이터 준비
+
+```py
+reviews = df['content']
+ratings = df['score']
+if len(reviews) != len(ratings):
+    print("warning: do not match")
+```
+
+## Feature 분석
+
+```py
+import seaborn as sns
+import matplotlib.pyplot as plt
+# 그래프 스타일 설정
+sns.set(style='whitegrid')
+
+# 점수의 빈도 수를 계산하여 데이터프레임으로 변환
+score_counts = df['score'].value_counts().reset_index()
+score_counts.columns = ['score', 'count']
+
+plt.figure(figsize=(8, 6))  # 그래프 크기 설정
+sns.barplot(x='score', y='count', data=score_counts, hue='score', palette='viridis', legend=False)    # 막대 그래프 그리기
+
+# 점수의 빈도 수 계산:
+# value_counts(): 이 메서드는 지정된 열의 고유한 값과 그 빈도를 계산하여 반환하는 시리즈 객체이다.
+# df['score'].value_counts(): 각 점수의 빈도를 계산한다.
+# .reset_index(): 인덱스를 초기화하여 새로운 데이터프레임으로 변환한다.
+# score_counts.columns = ['score', 'count']: reset_index로 초기화한 열 이름을 다시 지정한다.
+
+# 그래프 제목 및 축 레이블 추가
+plt.title('Distribution of Scores', fontsize=16)
+plt.xlabel('Score', fontsize=14)
+plt.ylabel('Count', fontsize=14)
+
+# 그래프 출력
+plt.show()
+```
+
+![](/team_10_LSTM/images/bar_1.png)
+
+### 그래프 종류
+
+1. 선 그래프 (Line Plot): 데이터를 선으로 연결한 그래프.
+2. 막대 그래프 (Bar Plot): 범주형 데이터를 막대로 표현한 그래프.
+3. 산점도 (Scatter Plot): 두 변수 간의 관계를 점으로 표현한 그래프.
+4. 히스토그램 (Histogram): 데이터 분포를 막대의 높이로 표현한 그래프.
+5. 파이 차트 (Pie Chart): 각 항목의 비율을 원형으로 표현한 그래프.
+6. 상자 그림 (Box Plot): 데이터의 사분위수를 보여주는 그래프.
+7. 히트맵 (Heatmap): 값의 크기를 색상으로 표현한 그래프.
+8. 커널 밀도 추정 (KDE Plot): 데이터의 분포를 곡선으로 표현한 그래프.
+
+### 선 그래프 (Line Plot)
+
+- 데이터의 빈도를 계산하여 선 그래프로 그리기
+1. 데이터의 빈도 계산하기
+- `score_counting= df['score'].value_counts().sort_index()`
+- `plt.plot(score_counting.index, score_counting.values)`
+- `plt.title("Line Plot of Score Distribution")`# 그래프의 제목을 설정한다. 이 경우 "Score Distribution"이라는 제목이 그래프 상단에 표시된다.
+- p`lt.xlabel("Score")# plt.xlabel()`: x축의 레이블을 설정한다. 이 경우 x축에 "Score"라는 레이블이 붙는다.
+- `plt.ylabel("Count")# plt.ylabel()`: y축의 레이블을 설정한다. 이 경우 y축에 "Frequency"라는 레이블이 붙다.
+- `plt.show()`
+1. plt와 sns 차이점
+`plt.plot()` (matplotlib): 기본적인 선 그래프를 그리며, 레이블, 축 설정 등을 수동으로 추가해야 한다.
+`sns.lineplot()` (seaborn): plt.plot()보다 더 높은 수준의 API로, 자동으로 축 레이블과 스타일링이 추가되고, DataFrame과의 통합이 더 쉽다.
+
+![](/team_10_LSTM/images/line_1.png)
+
+### 막대 그래프 (Bar Plot)
+
+- 데이터의 빈도를 계산하여 막대 그래프로 그리기
+1. 그래프 그리기
+- `plt.bar(score_counting.index, score_counting.values)`
+- `plt.title("Bar Plot of Score Distribution")`
+- `plt.xlabel("Score")`
+- `plt.ylabel("Count")`
+- `plt.show()`
+1. plt와 sns 차이점
+- `plt.bar() (matplotlib)`: 단순한 막대 그래프 그리기, 축 레이블과 스타일을 수동으로 설정해야 한다.
+- `sns.barplot() (seaborn)`: mean과 confidence interval이 자동으로 계산되어 표시되며 DataFrame을 쉽게 사용해 그룹별 평균을 시각화할 수 있다.
+
+![](/team_10_LSTM/images/bar_2.png)
+
+### 산점도 (Scatter Plot)
+
+1. 데이터의 빈도를 계산하여 산점도로 그리기
+- `plt.scatter(score_counting.index, score_counting.values)`
+- `plt.title("Scatter Plot of Score Distribution")`
+- `plt.xlabel("Score")`
+- `plt.ylabel("Count")`
+- `plt.show()`
+1. plt와 sns 차이점
+- `plt.scatter() (matplotlib)`: 산점도를 그릴 때 수동으로 색, 크기 등을 지정해야 한다.
+- `sns.scatterplot() (seaborn)`: hue, size, style 인수를 통해 카테고리별로 색깔과 모양을 자동으로 구분해준다.# 데이터프레임과 함께 쉽게 사용 가능하다.
+
+![](/team_10_LSTM/images/scatter.png)
+
+### 히스토그램 (Histogram)
+
+1. 히스토그램으로 데이터 분포 그리기
+- `plt.hist(df['score'], bins=5, range=(1, 5), edgecolor='black')`
+- `plt.title("Histogram of Score Distribution")`
+- `plt.xlabel("Score")`
+- `plt.ylabel("Count")`
+- `plt.show()`
+1. plt와 sns 차이점
+- `plt.plot() (matplotlib)`: 기본적인 선 그래프를 그리며, 레이블, 축 설정 등을 수동으로 추가해야 한다.
+- `sns.lineplot() (seaborn)`: plt.plot()보다 더 높은 수준의 API로, 자동으로 축 레이블과 스타일링이 추가되고, DataFrame과의 통합이 더 쉽다.
+
+![](/team_10_LSTM/images/histo.png)
+
+### 파이 차트 (Pie Chart)
+
+1. 데이터의 빈도를 계산하여 파이 차트로 그리기
+- `score_counts_not_sortedindex= df['score'].value_counts()`
+- `plt.pie(score_counts_not_sortedindex, labels=score_counts.index, autopct='%1.1f%%')`
+- `plt.title("Pie Chart of Score Distribution")`
+`plt.show()`
+1.  plt와 sns 차이점
+- `plt.pie()`: matplotlib에서만 제공하고, 직접 수동 설정이 필요하다.
+- sns: Seaborn은 파이 차트를 제공하지 않는다.
+
+![](/team_10_LSTM/images/pie.png)
+
+### 상자 그림 (Box Plot) :
+
+1. 상자 그림으로 데이터 분포 그리기
+- `plt.boxplot(df['score'])`
+- `plt.title("Box Plot of Score Distribution")`
+- `plt.ylabel("Score")`
+- `plt.show()`
+1.  plt와 sns 차이점
+- `plt.boxplot()`: 한 번에 여러 개의 데이터 세트를 위치 인수로 받을 수 있다.
+- `sns.boxplot()`: 하나의 데이터 세트만 위치 인수로 받을 수 있으며, x 또는 y를 지정해준다.
+- 그러나 데이터프레임과 함께 사용하여 x와 y를 축별로 나누어 사용할 수 있다.
+
+![](/team_10_LSTM/images/box.png)
+
+### 히트맵 (Heatmap)
+
+- 범주형 데이터이므로 빈도에 대한 히트맵
+1.  점수별 빈도를 데이터프레임으로 변환
+- `score_counts_frame= df['score'].value_counts().sort_index().to_frame().T`
+- **T는 데이터프레임을 전치(transpose)하는 메서드**
+- `sns.heatmap(score_counts_frame, annot=True, cmap="YlGnBu", cbar=False)`
+- `plt.title("Heatmap of Score Distribution")`
+- `plt.xlabel("Score")`
+- `plt.show()`
+1. plt와 sns 차이점
+- `plt.imshow()`: 이미지 또는 행렬 데이터를 단순히 시각화하는 데 적합하고, 데이터프레임 통합이 어렵고, 수동 설정이 많다.
+- `sns.heatmap()`: 데이터프레임과의 통합이 매우 쉽고, 상관 행렬 등의 시각화에 유용하며, 자동화된 스타일링을 제공한다.
+
+![](/team_10_LSTM/images/heat.png)
+
+### 커널 밀도 추정 (KDE Plot)
+
+1. KDE 플롯으로 데이터 분포 그리기
+- `sns.kdeplot(df['score'], bw_adjust=0.5)`
+- `plt.title("KDE Plot of Score Distribution")`
+- `plt.xlabel("Score")`
+- `plt.ylabel("Density")`
+- `plt.show()`
+1. plt와 sns 차이점
+- `plt.plot()과 scipy.stats.kde()` (matplotlib): 커널 밀도 추정을 수동으로 계산하고 그려야 한다
+- `sns.kdeplot()` (seaborn): kde 그래프를 간단히 그릴 수 있으며,
+- 여러 카테고리나 변수를 쉽게 시각화할 수 있다.
+
+![](/team_10_LSTM/images/kde.png)
+
+# 시퀀스 데이터 변환
 ## 토큰화 
 - 시퀀스 데이터로 변형하기 전에 문장을 끊어서 토큰화
 - 토큰화를 하면 가공하기 쉬워짐
@@ -200,10 +376,10 @@ len(tokenizer.word_index) # 단어집 개수
 ```
 [¶ TOP](#lstm-model)
 
-# 시퀀스 데이터 변환
+## Padding
 - 정수형 데이터로 변환 
 - 빈 부분 0으로 페딩 처리
-## TorchText 예시
+### TorchText 예시
 
 ```py
 from torch.nn.utils.rnn import pad_sequence
@@ -236,7 +412,7 @@ array([ 155,   43,  816,   58,  767,   52,  565,  130,  287,   12,  286,
           0,    0,    0,    0,    0,    0], dtype=int32)
 ```
 
-## Tensorflow 예시
+### Tensorflow 예시
 
 ```py
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -520,6 +696,23 @@ Finished Training
 Training time: 1363.60 seconds
 Finished Training
 Accuracy: 63.42%
+
+# sgd 5 - MAX_LENGTH = 50, laber_encoder, EMBED_DIM = 64, HIDDEN_DIM = 128
+
+Epoch [1/10], Loss: 1.4150
+Epoch [2/10], Loss: 1.2739
+Epoch [3/10], Loss: 0.8576
+Epoch [4/10], Loss: 1.2630
+Epoch [5/10], Loss: 0.8323
+Epoch [6/10], Loss: 0.8134
+Epoch [7/10], Loss: 1.0209
+Epoch [8/10], Loss: 0.9471
+Epoch [9/10], Loss: 0.7644
+Epoch [10/10], Loss: 0.7247
+Finished Training
+Training time: 798.79 seconds
+Finished Training
+Accuracy: 63.11%
 ```
 
 [¶ TOP](#lstm-model)
